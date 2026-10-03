@@ -1,7 +1,7 @@
 # Image Quality Scorer — Dependencies
 # pip install -r requirements.txt
 
-"numpy<2"
+numpy<2
 torch==2.2.2
 torchvision==0.17.2
 opencv-python==4.9.0.80
