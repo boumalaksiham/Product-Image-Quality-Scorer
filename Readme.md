@@ -1,4 +1,9 @@
 # Product Image Quality Scorer
+
+## Evaluation scope
+
+This prototype trains and demonstrates scoring on **seven synthetic images**. Correct ordering of those examples is an in-sample demonstration, not held-out evidence of real-world image quality assessment. The score combines learned and heuristic signals; it has not been calibrated against an independent human-rated dataset.
+
 ### EfficientNet-B0 + Classical Computer Vision Signal Analysis
 
 > Built as part of an e-commerce ML portfolio targeting applied research roles at companies like eBay, Amazon, and Shopify.
@@ -211,8 +216,8 @@ image_quality/
 
 ### Installation
 ```bash
-git clone <repo-url>
-cd image_quality
+git clone https://github.com/boumalaksiham/Product-Image-Quality-Scorer.git
+cd Product-Image-Quality-Scorer
 
 python3 -m venv venv
 source venv/bin/activate       # Mac/Linux
