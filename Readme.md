@@ -2,6 +2,14 @@
 
 An explainable image-quality demonstration combining classical computer-vision signals and an EfficientNet-B0 regression head. It scores product photos on a heuristic 1–5 scale and identifies measurable issues.
 
+## What the score is intended to explain
+
+A photo may be sharp but underexposed, or bright but blurred. The demo reports individual signals alongside a combined score so a reviewer can inspect which measurable issue affected the result.
+
+**Design choice:** combine fixed image measurements with a neural regression head. The classical branch remains available when a trained checkpoint is absent; the two scoring modes should therefore be evaluated separately. Neither mode determines whether the pictured product is correct or whether a marketplace will accept the listing.
+
+**Start here:** [models/quality_scorer.py](models/quality_scorer.py) contains the measurements and combination; [data/image_generator.py](data/image_generator.py) makes the controlled examples; [demo.py](demo.py) exposes the signal breakdown.
+
 ## Method
 
 The classical extractor measures sharpness, brightness, contrast, colorfulness, background simplicity, resolution, and noise. When a trained checkpoint is available, the combined normalized score uses **35% neural output and 65% classical score**. Without a checkpoint, the final score falls back to the classical score. The model is still initialized, so pretrained ImageNet weights may be downloaded.
