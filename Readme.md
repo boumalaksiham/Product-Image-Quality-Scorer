@@ -20,7 +20,7 @@ Grades and recommendations are threshold-based heuristics. They are not guarante
 
 [data/image_generator.py](data/image_generator.py) creates **seven synthetic images** illustrating blur, darkness, overexposure, clutter and resolution differences. Labels in `train.py` are assigned demonstration scores, not collected human ratings.
 
-The trainer uses five images for training and two for repeated validation/checkpoint selection (seed 42). Although named `test` in the code, those two images are validation data. The demo scores all seven examples, including training images. This tiny synthetic workflow is not a real-world generalization benchmark.
+The trainer uses five images for training and two for repeated validation/checkpoint selection (seed 42). These two images are explicitly named validation data in the trainer. Python, NumPy, and PyTorch are seeded. The selected checkpoint is reloaded and its predictions, targets, image paths, and MAE are saved to `models/saved/validation_report.json`. The demo scores all seven examples, including training images. This tiny synthetic workflow is not a real-world generalization benchmark.
 
 ## Setup
 
@@ -60,3 +60,5 @@ Training runs for 10 epochs and writes `models/saved/best_model.pt` and `models/
 Brightness, sharpness and background thresholds encode preferences that may not suit every product category. Complex but useful backgrounds can be penalized. Synthetic labels and the two-image validation set are too small to establish ranking quality. The demo's correct ordering should not be presented as held-out accuracy.
 
 Evaluate a larger independent human-rated dataset using regression error and rank correlation, report scorer variants separately, analyze category-specific failures, and calibrate thresholds before relying on the scores for decisions.
+
+The modified training script passes Python syntax compilation. Training has not been rerun; existing artifacts predate this repair. Rerun training to generate the new selected-checkpoint validation report.

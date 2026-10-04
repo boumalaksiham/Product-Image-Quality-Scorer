@@ -18,6 +18,7 @@ Usage:
 import os
 import sys
 import json
+import random
 import torch
 import torch.nn as nn
 import numpy as np
@@ -34,7 +35,7 @@ CONFIG = {
     "epochs": 10,
     "batch_size": 4,
     "learning_rate": 1e-4,
-    "test_size": 0.2,
+    "validation_size": 0.2,
     "random_state": 42,
 }
 
@@ -107,6 +108,9 @@ def main():
     print("IMAGE QUALITY SCORER — TRAINING")
     print("=" * 60)
 
+    random.seed(CONFIG["random_state"])
+    np.random.seed(CONFIG["random_state"])
+    torch.manual_seed(CONFIG["random_state"])
     device = torch.device("cpu")
 
     # 1. Generate synthetic images
@@ -125,18 +129,18 @@ def main():
     for p, l in zip(all_paths, all_labels):
         print(f"  {os.path.basename(p):<40} score: {l}")
 
-    # 3. Train/test split
-    train_paths, test_paths, train_labels, test_labels = train_test_split(
+    # 3. Train/validation split
+    train_paths, validation_paths, train_labels, validation_labels = train_test_split(
         all_paths, all_labels,
-        test_size=CONFIG["test_size"],
+        test_size=CONFIG["validation_size"],
         random_state=CONFIG["random_state"]
     )
 
     transform = get_transform()
     train_dataset = ImageQualityDataset(train_paths, train_labels, transform)
-    test_dataset = ImageQualityDataset(test_paths, test_labels, transform)
+    validation_dataset = ImageQualityDataset(validation_paths, validation_labels, transform)
     train_loader = DataLoader(train_dataset, batch_size=CONFIG["batch_size"], shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=CONFIG["batch_size"])
+    validation_loader = DataLoader(validation_dataset, batch_size=CONFIG["batch_size"])
 
     # 4. Model
     print("\nLoading EfficientNet-B0 (pretrained on ImageNet)...")
@@ -154,7 +158,7 @@ def main():
     best_mae = float("inf")
     for epoch in range(1, CONFIG["epochs"] + 1):
         loss = train_epoch(model, train_loader, optimizer, criterion, device)
-        mae, _, _ = evaluate(model, test_loader, device)
+        mae, _, _ = evaluate(model, validation_loader, device)
         print(f"Epoch {epoch:>2}/{CONFIG['epochs']} | Loss: {loss:.4f} | MAE: {mae:.4f}")
 
         if mae < best_mae:
@@ -163,6 +167,14 @@ def main():
             torch.save(model.state_dict(), "models/saved/best_model.pt")
 
     print(f"\nBest MAE: {best_mae:.4f} (on 1-5 scale)")
+
+    model.load_state_dict(torch.load("models/saved/best_model.pt", map_location=device, weights_only=True))
+    checkpoint_mae, predictions, targets = evaluate(model, validation_loader, device)
+    with open("models/saved/validation_report.json", "w") as f:
+        json.dump({"evaluation_role": "synthetic_checkpoint_selection_validation",
+                   "train_images": train_paths, "validation_images": validation_paths,
+                   "seed": CONFIG["random_state"], "mae": float(checkpoint_mae),
+                   "predictions": predictions, "targets": targets}, f, indent=2)
 
     # 6. Save config
     with open("models/saved/config.json", "w") as f:
