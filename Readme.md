@@ -62,3 +62,5 @@ Brightness, sharpness and background thresholds encode preferences that may not 
 Evaluate a larger independent human-rated dataset using regression error and rank correlation, report scorer variants separately, analyze category-specific failures, and calibrate thresholds before relying on the scores for decisions.
 
 The modified training script passes Python syntax compilation. Training has not been rerun; existing artifacts predate this repair. Rerun training to generate the new selected-checkpoint validation report.
+
+Checkpoint-selection regression checks: `python -m unittest discover -s tests -v`. These execute the trainer’s selection/reload statements with controlled epoch scores, including zero-score ties and a best epoch before the final epoch. They passed without model downloads; they do not test learned-model quality.
